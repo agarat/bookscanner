@@ -1,5 +1,9 @@
 import cv2
 from pyzbar.pyzbar import decode
+import isbnlib
+
+def is_valid_isbn(code):
+    return isbnlib.is_isbn10(code) or isbnlib.is_isbn13(code)
 
 def scan_barcode():
     cap = cv2.VideoCapture(0)  # Acceder a la cámara
@@ -40,7 +44,10 @@ def scan_barcode():
             for barcode in barcodes:
                 barcode_data = barcode.data.decode('utf-8')
                 print(f'Código de barras detectado: {barcode_data}')
-                cv2.waitKey(0)  # Esperar a que se presione cualquier tecla para continuar
+
+                if is_valid_isbn(barcode_data):
+                    print(f'ISBN válido detectado: {barcode_data}')
+                    return barcode_data  # Salir del bucle y devolver el ISBN válido
 
         # Esperar a que se presione la tecla 'q' para salir
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -50,4 +57,6 @@ def scan_barcode():
     cv2.destroyAllWindows()  # Cerrar todas las ventanas
 
 if __name__ == "__main__":
-    scan_barcode()
+    scanned_isbn = None
+    while not scanned_isbn or not is_valid_isbn(scanned_isbn):
+        scanned_isbn = scan_barcode()
