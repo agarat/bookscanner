@@ -1,3 +1,4 @@
 opencv-python
 pyzbar
 isbnlib
+requests

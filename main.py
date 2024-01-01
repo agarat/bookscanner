@@ -1,9 +1,43 @@
 import cv2
 from pyzbar.pyzbar import decode
 import isbnlib
+import requests
 
 def is_valid_isbn(code):
     return isbnlib.is_isbn10(code) or isbnlib.is_isbn13(code)
+
+def get_author_name(author_key):
+    url = f'https://openlibrary.org{author_key}.json'
+
+    response = requests.get(url)
+    if response.status_code == 200:
+        author_info = response.json()
+        author_name = author_info.get('name', 'Nombre del autor no encontrado')
+        return author_name
+    else:
+        return 'Error al obtener el nombre del autor'
+
+def get_book_info(isbn):
+    url = f'https://openlibrary.org/isbn/{isbn}.json'
+
+    response = requests.get(url)
+    if response.status_code == 200:
+        book_info = response.json()
+        if 'title' in book_info:
+            title = book_info['title']
+            authors_list = book_info.get('authors', [])
+            if authors_list:
+                authors = [get_author_name(author.get('key')) for author in authors_list]
+                authors_str = ', '.join(authors)
+                print(f'Título: {title}')
+                print(f'Autores: {authors_str}')
+            else:
+                print(f'Título: {title}')
+                print('Información de autor no encontrada.')
+        else:
+            print('No se encontró información para el ISBN proporcionado.')
+    else:
+        print('Error al obtener la información del libro.')
 
 def scan_barcode():
     cap = cv2.VideoCapture(0)  # Acceder a la cámara
@@ -57,6 +91,6 @@ def scan_barcode():
     cv2.destroyAllWindows()  # Cerrar todas las ventanas
 
 if __name__ == "__main__":
-    scanned_isbn = None
-    while not scanned_isbn or not is_valid_isbn(scanned_isbn):
-        scanned_isbn = scan_barcode()
+    isbn = scan_barcode()
+    if isbn:
+        get_book_info(isbn)
