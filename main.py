@@ -2,6 +2,7 @@ import cv2
 from pyzbar.pyzbar import decode
 import isbnlib
 import requests
+import csv
 
 def is_valid_isbn(code):
     return isbnlib.is_isbn10(code) or isbnlib.is_isbn13(code)
@@ -17,6 +18,11 @@ def get_author_name(author_key):
     else:
         return 'Error al obtener el nombre del autor'
 
+def save_to_csv(data):
+    with open('books_info.csv', mode='a', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(data)
+
 def get_book_info(isbn):
     url = f'https://openlibrary.org/isbn/{isbn}.json'
 
@@ -29,10 +35,14 @@ def get_book_info(isbn):
             if authors_list:
                 authors = [get_author_name(author.get('key')) for author in authors_list]
                 authors_str = ', '.join(authors)
-                print(f'Título: {title}')
-                print(f'Autores: {authors_str}')
+                publisher = book_info.get('publishers', ['No disponible'])[0]
+                publish_date = book_info.get('publish_date', 'No disponible')
+                key_link = f'https://openlibrary.org{book_info.get("key")}'
+
+                data = [isbn, title, authors_str, publisher, publish_date, key_link]
+                save_to_csv(data)
+                print('Información guardada en el archivo CSV.')
             else:
-                print(f'Título: {title}')
                 print('Información de autor no encontrada.')
         else:
             print('No se encontró información para el ISBN proporcionado.')
