@@ -101,6 +101,21 @@ def scan_barcode():
     cv2.destroyAllWindows()  # Cerrar todas las ventanas
 
 if __name__ == "__main__":
-    isbn = scan_barcode()
-    if isbn:
-        get_book_info(isbn)
+    # Verificar si el archivo CSV existe y, de no ser así, crearlo con un encabezado
+    try:
+        with open('books_info.csv', mode='r', encoding='utf-8') as file:
+            pass  # El archivo existe, no es necesario hacer nada
+    except FileNotFoundError:
+        with open('books_info.csv', mode='w', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            writer.writerow(['ISBN', 'Título', 'Autor', 'Editor', 'Año de Publicación', 'Link a Key'])
+
+    while True:
+        isbn = scan_barcode()
+        if isbn:
+            with open('books_info.csv', mode='r', encoding='utf-8') as file:
+                reader = csv.reader(file)
+                existing_isbns = {row[0] for row in reader}
+
+            if isbn not in existing_isbns:
+                get_book_info(isbn)
