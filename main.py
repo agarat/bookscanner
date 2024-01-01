@@ -9,9 +9,16 @@ def scan_barcode():
         print("No se pudo abrir la cámara. Asegúrate de tener los permisos adecuados.")
         return
 
+    # Obtener dimensiones de la cámara
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    # Calcular posición y tamaño del rectángulo centrado
+    rect_w, rect_h = int(width * 0.6), int(height * 0.8)
+    rect_x, rect_y = int((width - rect_w) / 2), int((height - rect_h) / 2)
+
     rect_color = (255, 0, 0)  # Color del rectángulo (en formato BGR)
     rect_thickness = 2
-    rect_x, rect_y, rect_w, rect_h = 200, 150, 240, 180  # Posición y tamaño del rectángulo
 
     while True:
         ret, frame = cap.read()  # Capturar un fotograma de la cámara
